@@ -11,7 +11,10 @@ export default function Login() {
     const handleLogin = async (e) => {
         setLoading(true);
 
-        const { error } = await supabase.auth.signInWithOtp({ email });
+        const { error } = await supabase.auth.signInWithOtp(
+            { email },
+            { redirectTo: window.location.href }
+        );
         setLoading(false);
 
         if (error) {
