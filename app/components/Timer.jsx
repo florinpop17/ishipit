@@ -9,6 +9,48 @@ export default function Timer({ session }) {
     const { user } = session;
 
     useEffect(() => {
+        const fetchSessions = async () => {
+            const { data: sessions, error } = await supabase
+                .from("sessions")
+                .select("*")
+                .eq("user_id", user.id)
+                .gte(
+                    "start_time",
+                    new Date(new Date().setHours(0, 0, 0, 0)).toISOString()
+                );
+
+            if (error) {
+                console.error("Error fetching sessions:", error);
+                return;
+            }
+
+            let totalTimeSpent = 0;
+            let runningSession = false;
+
+            sessions.forEach((session) => {
+                const startTime = new Date(session.start_time).getTime();
+                const endTime = session.end_time
+                    ? new Date(session.end_time).getTime()
+                    : new Date(
+                          new Date().getTime() +
+                              new Date().getTimezoneOffset() * 60000
+                      ).getTime();
+
+                if (!session.end_time) {
+                    runningSession = true;
+                }
+
+                totalTimeSpent += Math.floor((endTime - startTime) / 1000); // convert to seconds
+            });
+
+            setTimeLeft(7200 - totalTimeSpent);
+            setIsRunning(runningSession);
+        };
+
+        fetchSessions();
+    }, [user.id]);
+
+    useEffect(() => {
         let timer;
         if (isRunning) {
             timer = setInterval(() => {

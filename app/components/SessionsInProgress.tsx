@@ -22,6 +22,21 @@ const SessionsInProgress = () => {
         };
 
         fetchSessions();
+
+        const subscription = supabase
+            .channel("sessions")
+            .on(
+                "postgres_changes",
+                { event: "*", schema: "public", table: "sessions" },
+                (payload) => {
+                    fetchSessions();
+                }
+            )
+            .subscribe();
+
+        return () => {
+            subscription.unsubscribe();
+        };
     }, []);
 
     if (loading) {
