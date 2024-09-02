@@ -17,6 +17,28 @@ export default function Profile() {
         getSession();
     }, [setSession]);
 
+    useEffect(() => {
+        const getProfile = async () => {
+            if (session) {
+                const { user } = session;
+                const { data, error } = await supabase
+                    .from("profiles")
+                    .select("username, name, timezone")
+                    .eq("id", user.id)
+                    .single();
+
+                if (data) {
+                    setUsername(data.username);
+                    setName(data.name);
+                    setTimezone(data.timezone);
+                } else if (error) {
+                    console.error("Error fetching profile:", error.message);
+                }
+            }
+        };
+        getProfile();
+    }, [session]);
+
     if (!session) {
         return <p>You must be logged in to view this page.</p>;
     }
