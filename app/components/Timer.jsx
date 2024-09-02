@@ -6,7 +6,6 @@ import { supabase } from "../lib/supabaseClient";
 export default function Timer({ session }) {
     const [timeLeft, setTimeLeft] = useState(7200); // 2 hours in seconds
     const [isRunning, setIsRunning] = useState(false);
-    const [workDetails, setWorkDetails] = useState("");
     const { user } = session;
 
     useEffect(() => {
@@ -20,7 +19,7 @@ export default function Timer({ session }) {
         if (timeLeft === 0) {
             clearInterval(timer);
             alert("Time is up!");
-            // Store end time in the database
+
             const { user } = session;
             supabase
                 .from("sessions")
@@ -35,12 +34,6 @@ export default function Timer({ session }) {
         await supabase
             .from("sessions")
             .insert({ user_id: user.id, start_time: new Date() });
-    };
-
-    const handleSaveWorkDetails = async () => {
-        await supabase
-            .from("work_sessions")
-            .insert({ user_id: user.id, details: workDetails });
     };
 
     const handleStop = async () => {
@@ -79,22 +72,6 @@ export default function Timer({ session }) {
                     Stop Timer
                 </button>
             </div>
-            {timeLeft === 0 && (
-                <div className="mt-5">
-                    <h2 className="text-xl mb-2">What did you work on?</h2>
-                    <textarea
-                        className="w-full p-2 border rounded mb-2"
-                        value={workDetails}
-                        onChange={(e) => setWorkDetails(e.target.value)}
-                    />
-                    <button
-                        className="px-4 py-2 text-white bg-green-500 rounded hover:bg-green-700"
-                        onClick={handleSaveWorkDetails}
-                    >
-                        Save
-                    </button>
-                </div>
-            )}
         </div>
     );
 }
